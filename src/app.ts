@@ -21,4 +21,5 @@ app.get('/', (req, res) => {
 // Global Error Handler Middleware
 app.use(errorHandler);
 
+// Export the app for use in server.ts
 export default app;

@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 import { ICar } from './car.interface';
 
-const CarSchema: Schema = new Schema({
+const CarSchema: Schema = new Schema<ICar>({
     brand: { type: String, required: true },
     model: { type: String, required: true },
     year: { type: Number, required: true },

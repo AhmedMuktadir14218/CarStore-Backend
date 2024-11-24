@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 
-export interface ICar extends Document {
+export interface ICar {
   brand: string;
   model: string;
   year: number;
