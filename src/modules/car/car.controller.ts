@@ -1,13 +1,7 @@
-import { Request, Response } from 'express';
-import {
-  createCar,
-  getCars,
-  getCarById,
-  updateCar,
-  deleteCar,
-} from './car.service';
+import { Request, Response, NextFunction } from 'express';
+import { createCar, getCarById, getCars, updateCar, deleteCar } from './car.service';
 
-export const handleCreateCar = async (req: Request, res: Response) => {
+export const handleCreateCar = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const car = await createCar(req.body);
     res.status(201).json({
@@ -16,17 +10,17 @@ export const handleCreateCar = async (req: Request, res: Response) => {
       data: car,
     });
   } catch (error) {
-    res.status(400).json({
-      message: 'Error creating car',
-      success: false,
-      error: error.message,
-    });
+    if (error instanceof Error) {
+      next(error);
+    } else {
+      next(new Error('Unknown error occurred while creating a car'));
+    }
   }
 };
 
-export const handleGetCars = async (req: Request, res: Response) => {
+export const handleGetCars = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const searchTerm = req.query.searchTerm as string;
+    const searchTerm = req.query.searchTerm as string | undefined;
     const cars = await getCars(searchTerm);
     res.status(200).json({
       message: 'Cars retrieved successfully',
@@ -34,63 +28,81 @@ export const handleGetCars = async (req: Request, res: Response) => {
       data: cars,
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Error retrieving cars',
-      success: false,
-      error: error.message,
-    });
+    if (error instanceof Error) {
+      next(error);
+    } else {
+      next(new Error('Unknown error occurred while retrieving cars'));
+    }
   }
 };
 
-export const handleGetCarById = async (req: Request, res: Response) => {
+export const handleGetCarById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const carId = req.params.carId;
-    const car = await getCarById(carId);
+    const car = await getCarById(req.params.carId);
+
+    if (!car) {
+      const error = new Error('Car not found');
+      (error as any).statusCode = 404;
+      throw error;
+    }
+
     res.status(200).json({
       message: 'Car retrieved successfully',
       success: true,
       data: car,
     });
   } catch (error) {
-    res.status(404).json({
-      message: 'Car not found',
-      success: false,
-      error: error.message,
-    });
+    if (error instanceof Error) {
+      next(error);
+    } else {
+      next(new Error('Unknown error occurred while retrieving the car'));
+    }
   }
 };
 
-export const handleUpdateCar = async (req: Request, res: Response) => {
+export const handleUpdateCar = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const carId = req.params.carId;
-    const car = await updateCar(carId, req.body);
+    const updatedCar = await updateCar(req.params.carId, req.body);
+
+    if (!updatedCar) {
+      const error = new Error('Car not found');
+      (error as any).statusCode = 404;
+      throw error;
+    }
+
     res.status(200).json({
       message: 'Car updated successfully',
       success: true,
-      data: car,
+      data: updatedCar,
     });
   } catch (error) {
-    res.status(400).json({
-      message: 'Error updating car',
-      success: false,
-      error: error.message,
-    });
+    if (error instanceof Error) {
+      next(error);
+    } else {
+      next(new Error('Unknown error occurred while updating the car'));
+    }
   }
 };
 
-export const handleDeleteCar = async (req: Request, res: Response) => {
+export const handleDeleteCar = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const carId = req.params.carId;
-    await deleteCar(carId);
+    const deletedCar = await deleteCar(req.params.carId);
+
+    if (!deletedCar) {
+      const error = new Error('Car not found');
+      (error as any).statusCode = 404;
+      throw error;
+    }
+
     res.status(200).json({
       message: 'Car deleted successfully',
       success: true,
     });
   } catch (error) {
-    res.status(404).json({
-      message: 'Car not found',
-      success: false,
-      error: error.message,
-    });
+    if (error instanceof Error) {
+      next(error);
+    } else {
+      next(new Error('Unknown error occurred while deleting the car'));
+    }
   }
 };

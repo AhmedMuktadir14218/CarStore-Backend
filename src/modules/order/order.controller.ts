@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction  } from 'express';
 import { createOrder, getOrders, calculateRevenue } from './order.service';
 
 export const placeOrder = async (req: Request, res: Response) => {
@@ -11,11 +11,11 @@ export const placeOrder = async (req: Request, res: Response) => {
       data: order,
     });
   } catch (error) {
-    res.status(400).json({
-      message: 'Error placing order',
-      success: false,
-      error: error.message,
-    });
+    if (error instanceof Error) {
+        next(error);
+      } else {
+        next(new Error('Unknown error occurred while creating the order'));
+      }
   }
 };
 
@@ -52,3 +52,7 @@ export const getRevenue = async (req: Request, res: Response) => {
     });
   }
 };
+function next(arg0: Error) {
+    throw new Error('Function not implemented.');
+}
+
