@@ -1,18 +1,15 @@
 import { Router } from 'express';
+import { authenticateJWT, authorizeRole } from '../../middleware/authMiddleware';
 import {
-  handleCreateCar,
-  handleGetCars,
-  handleGetCarById,
-  handleUpdateCar,
-  handleDeleteCar,
+  handleCreateCar, handleGetCars, handleGetCarById, handleUpdateCar, handleDeleteCar
 } from './car.controller';
 
 const router = Router();
 
-router.post('/', handleCreateCar); // Create a car
-router.get('/', handleGetCars); // Get all cars (with optional searchTerm)
-router.get('/:carId', handleGetCarById); // Get a specific car by ID
-router.put('/:carId', handleUpdateCar); // Update a car by ID
-router.delete('/:carId', handleDeleteCar); // Delete a car by ID
+router.post('/', authenticateJWT, authorizeRole(['admin']), handleCreateCar);
+router.get('/', handleGetCars);
+router.get('/:carId', handleGetCarById);
+router.put('/:carId', authenticateJWT, authorizeRole(['admin']), handleUpdateCar);
+router.delete('/:carId', authenticateJWT, authorizeRole(['admin']), handleDeleteCar);
 
 export default router;
